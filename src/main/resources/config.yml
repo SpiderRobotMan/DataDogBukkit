@@ -1,0 +1,3 @@
+datadog:
+  host: 'localhost'
+  port: 8125

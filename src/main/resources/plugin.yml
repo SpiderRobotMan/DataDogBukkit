@@ -1,0 +1,7 @@
+name: DataDogBukkit
+version: 1.0.0
+description: Send server statistics to DataDog usinf StatsD.
+author: SpiderRobotMan
+website: http://www.spiderrobotman.com
+
+main: com.spiderrobotman.datadogbukkit.DataDogBukkit
