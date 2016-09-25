@@ -28,12 +28,12 @@ public class DataDogBukkit extends JavaPlugin {
         //Import config
         String DD_HOST = getConfig().getString("datadog.host", "localhost");
         int DD_PORT = getConfig().getInt("datadog.port", 8125);
+        String DD_PREFIX = getConfig().getString("datadog.prefix", "bukkit.stats");
 
         //Start TPS monitor task
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new TPS(), 100L, 1L);
 
         //Initialize StatsD client
-        String DD_PREFIX = "bukkit.stats";
         final StatsDClient statsd = new NonBlockingStatsDClient(DD_PREFIX, DD_HOST, DD_PORT);
 
         Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
@@ -41,10 +41,10 @@ public class DataDogBukkit extends JavaPlugin {
             public void run() {
                 int entities = 0;
                 int tiles = 0;
-                int players = 0;
-                int avg = 0;
-                int max = 0;
-                int min = 500;
+                int ping_count = 0;
+                int ping_avg = 0;
+                int ping_max = 0;
+                int ping_min = 500;
 
                 for(World w : Bukkit.getWorlds()) {
                     for(Chunk c : w.getLoadedChunks()) {
@@ -58,22 +58,22 @@ public class DataDogBukkit extends JavaPlugin {
                         int cping = getPlayerPing(p);
                         if(cping <= 0) continue;
                         if(cping > 500) cping = 500;
-                        players++;
-                        avg += cping;
-                        if(cping < min) min = cping;
-                        if(cping > max) max = cping;
+                        ping_count++;
+                        ping_avg += cping;
+                        if(cping < ping_min) ping_min = cping;
+                        if(cping > ping_max) ping_max = cping;
                     } catch(Exception ignored) {}
                 }
 
-                avg = avg/players;
+                ping_avg = ping_avg/ping_count;
 
-                statsd.recordGaugeValue("players", players);
+                statsd.recordGaugeValue("players", Bukkit.getOnlinePlayers().size());
                 statsd.recordGaugeValue("entities", entities);
                 statsd.recordGaugeValue("tiles", tiles);
                 statsd.recordGaugeValue("tps", TPS.getTPS());
-                statsd.recordGaugeValue("ping.avg", avg);
-                statsd.recordGaugeValue("ping.min", min);
-                statsd.recordGaugeValue("ping.max", max);
+                statsd.recordGaugeValue("ping.avg", ping_avg);
+                statsd.recordGaugeValue("ping.min", ping_min);
+                statsd.recordGaugeValue("ping.max", ping_max);
             }
         }, 0, 1200); //Run task every 1 minute.
     }

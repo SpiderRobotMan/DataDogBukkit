@@ -1,3 +1,4 @@
 datadog:
   host: 'localhost'
   port: 8125
+  prefix: 'bukkit.stats'
